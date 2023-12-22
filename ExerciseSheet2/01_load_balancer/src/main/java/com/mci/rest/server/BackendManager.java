@@ -9,7 +9,7 @@ import java.util.List;
 public final class BackendManager {
 	
     private static BackendManager instance;
-    private static Object monitor = new Object();
+    private static final Object monitor = new Object();
     
     private List<String> serviceRegistry = new ArrayList<>();
 

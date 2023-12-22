@@ -16,25 +16,50 @@ import java.util.*;
 
 @Path("/computationservice")
 public class LoadBalancerService {
-    private static Random rand = new Random();
+    private static final Random rand = new Random();
 
     @GET
     @Path("/calculate")
     @Produces({ MediaType.APPLICATION_JSON })
     public String CalculateValue(@QueryParam("n1") String n1,@QueryParam("n2") String n2,@QueryParam("op") String op, @Context HttpServletRequest req) {
-    	
+        // Input-Validierung for best practice :D
+        if (n1 == null || n1.trim().isEmpty() || n2 == null || n2.trim().isEmpty() || op == null || op.trim().isEmpty()) {
+            return "Invalid input: One or more parameters are empty.";
+        }
+
+        try {
+            Double.parseDouble(n1);
+            Double.parseDouble(n2);
+        } catch (NumberFormatException e) {
+            return "Invalid input: n1 and n2 must be numeric.";
+        }
+
+        List<String> validOps = Arrays.asList("+", "-", "*", "/");
+        if (!validOps.contains(op)) {
+            return "Invalid input: 'op' must be one of +, -, *, /.";
+        }
+
         System.out.println(req.getRemoteAddr() + ":" + req.getRemotePort() + " called CalculateValue(" + n1 + ", " + n2 + ", " + op + ")");
 
     	// Get list of backend servers and randomly select one
     	BackendManager mgr = BackendManager.getInstance();
     	List<String> serverList =mgr.getBackendServices();
+        if (serverList.isEmpty()) {
+            System.out.println("No backend servers registered.");
+            return "Error: No backend servers available.";
+        }
+
         String restServiceUrl = serverList.get(rand.nextInt(serverList.size()));
         
         System.out.println("Redirecting request to " + restServiceUrl);
     	
         // Call backend service and return result
-		ResteasyClient client = new ResteasyClientBuilder().build();
-		ResteasyWebTarget target = client.target(UriBuilder.fromPath(restServiceUrl));
+        ResteasyClient client = (ResteasyClient) ResteasyClientBuilder.newBuilder().build();
+		//ResteasyClient client = new ResteasyClientBuilder().build();
+
+        ResteasyWebTarget target = (ResteasyWebTarget) client.target(UriBuilder.fromPath(restServiceUrl));
+		//ResteasyWebTarget target = client.target(String.valueOf(UriBuilder.fromPath(restServiceUrl)));
+
 		ComputationServiceInterface proxy = target.proxy(ComputationServiceInterface.class);
 		String result = proxy.CalculateValue(n1,n2, op);
         

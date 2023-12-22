@@ -6,24 +6,34 @@ repositories {
     mavenCentral()
 }
 
+
 dependencies {
-    implementation 'org.jboss.resteasy:resteasy-jaxrs:3.0.19.Final'
-    implementation 'org.jboss.resteasy:resteasy-servlet-initializer:3.0.19.Final'
-    implementation 'javax.servlet:javax.servlet-api:3.1.0'
-    implementation 'org.eclipse.jetty:jetty-servlet:9.3.14.v20161028'
-    testImplementation 'junit:junit:4.11'
-    implementation 'org.jboss.resteasy:resteasy-client:3.0.19.Final'
+    
+    // Aktualisiere RESTEasy auf die neueste Version
+    implementation group: 'org.jboss.resteasy', name: 'resteasy-jaxrs', version: '3.15.6.Final'
+    //implementation group: 'org.jboss.resteasy', name: 'resteasy-client', version: '6.2.6.Final'
+    implementation group: 'org.jboss.resteasy', name: 'resteasy-client', version: '3.15.6.Final'
+
+    // Aktualisiere Jetty auf die neueste Version
+    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.35.v20201120'
+
+    // Aktualisiere Servlet API
+    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.1'
+   
 }
 
 group = 'mci.resteasy'
 version = '1.0-SNAPSHOT'
 sourceCompatibility = '1.8'
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE // allow duplicates
     manifest {
         attributes(
                 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
@@ -34,7 +44,7 @@ jar {
 }
 
 //Creates a Assignment.zip under build/distributions
-task mciSrcZip(type: Zip) {
+tasks.register('mciSrcZip', Zip) {
     from projectDir
     include 'src/**/*'
     include '*.gradle'
@@ -44,7 +54,7 @@ task mciSrcZip(type: Zip) {
     archiveFileName = "Assignment.zip"
 }
 
-tasks.withType(JavaExec) {
+tasks.withType(JavaExec).configureEach {
     if (System.getProperty('DEBUG', 'false') == 'true') {
         jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=9099'
     }

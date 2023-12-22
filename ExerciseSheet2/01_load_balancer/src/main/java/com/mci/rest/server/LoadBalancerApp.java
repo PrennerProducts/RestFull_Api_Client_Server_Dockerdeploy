@@ -17,7 +17,7 @@ public class LoadBalancerApp extends Application {
 	final static int SERVER_PORT = 8787;
 	final static String SERVER_PATH_PREFIX = "/api";
  
-    private Set<Object> singletons = new HashSet<Object>();
+    private final Set<Object> singletons = new HashSet<Object>();
  
     public LoadBalancerApp() {
 
@@ -29,7 +29,7 @@ public class LoadBalancerApp extends Application {
         return singletons;
     }
     
-    public static void main(String args[]) {
+    public static void main(String[] args) {
     	Server server = new Server(SERVER_PORT);
     	
     	// Setup the basic Application "context" at "/".
@@ -38,6 +38,7 @@ public class LoadBalancerApp extends Application {
 
         // Setup RESTEasy's HttpServletDispatcher at "/api/*".
         final ServletHolder restEasyServlet = new ServletHolder(new HttpServletDispatcher());
+        //final ServletHolder restEasyServlet = new ServletHolder(new HttpServletDispatcher());
         restEasyServlet.setInitParameter("resteasy.servlet.mapping.prefix", SERVER_PATH_PREFIX);
         restEasyServlet.setInitParameter("javax.ws.rs.Application", LoadBalancerApp.class.getCanonicalName());
         context.addServlet(restEasyServlet,  SERVER_PATH_PREFIX + "/*");

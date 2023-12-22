@@ -2,6 +2,7 @@ package com.mci.rest.server;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.io.File;
 import java.io.PrintStream;
@@ -22,12 +23,13 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 
 
+
 public class ComputationApp extends Application {
 	
 	final static int SERVER_PORT = 8989;
 	final static String SERVER_PATH_PREFIX = "/api";
  
-    private Set<Object> singletons = new HashSet<Object>();
+    private final Set<Object> singletons = new HashSet<Object>();
  
     public ComputationApp() {
 
@@ -39,19 +41,19 @@ public class ComputationApp extends Application {
         return singletons;
     }
     
-    public static void main(String args[]) {
+    public static void main(String[] args) {
     
         // Redirecting any output to a logfile
-        try {
-            File logfile = new File("/var/log/computationservice/service.log");
-            FileOutputStream logstream = new FileOutputStream(logfile);
-            PrintStream logprintstream = new PrintStream(logstream);
-            System.setOut(logprintstream);
-            System.setErr(logprintstream);
-        } catch (Exception e) {
-            System.err.println("Could not create log file");
-            e.printStackTrace();
-        }
+//        try {
+//            File logfile = new File("/var/log/computationservice/service.log");
+//            FileOutputStream logstream = new FileOutputStream(logfile);
+//            PrintStream logprintstream = new PrintStream(logstream);
+//            System.setOut(logprintstream);
+//            System.setErr(logprintstream);
+//        } catch (Exception e) {
+//            System.err.println("Could not create log file");
+//            e.printStackTrace();
+//        }
     
         Server server = new Server(SERVER_PORT);
         
@@ -85,11 +87,11 @@ public class ComputationApp extends Application {
 	
 	            // Register service url at load balancer
 	    		ResteasyClient client = new ResteasyClientBuilder().build();
-	    		ResteasyWebTarget target = client.target(UriBuilder.fromPath(load_balancer_url));
-	    		RegisterServiceInterface proxy = target.proxy(RegisterServiceInterface.class);
+                ResteasyWebTarget target = client.target(load_balancer_url);
+                RegisterServiceInterface proxy = target.proxy(RegisterServiceInterface.class);
 	    		String result = proxy.registerService(serverUrl);
 	    		
-	    		if (result == "\"OK\"") {
+	    		if (Objects.equals(result, "\"OK\"")) {
 	    			System.out.println("Sucessfully registered service at load-balancer.");
 	    		} else {
 	    			System.out.println("Could not register service at load-balancer.");
